@@ -5,6 +5,7 @@ import Timer from  "../components/Timer";
 import { GiTargetArrows } from "react-icons/gi";
 import { FaFilePen } from "react-icons/fa6";
 import { FaAngellist } from "react-icons/fa6";
+import api from "@/lib/api";
 
 export default function ExamPage() {
   const [questions, setQuestions] = useState([]);
@@ -24,14 +25,13 @@ export default function ExamPage() {
     const fetchQuestions = async () => {
       const token = localStorage.getItem("token");
       try {
-        const res = await fetch("http://localhost:3005/api/questions", {
+        const res = await api.get("/questions", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
-        const data = await res.json();
-        setQuestions(data);
+        setQuestions(res.data);
       } catch (err) {
         console.error("Failed to load questions", err);
       }
@@ -49,20 +49,17 @@ export default function ExamPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3005/api/submit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          userId,
-          answers,
-        }),
-      });
-
-      const data = await res.json();
-      setScore(data.score);
+      const res = await api.post(
+        "/submit",
+        { userId, answers }, 
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setScore(res.data.score);
       setSubmitted(true);
     } catch (err) {
       console.error("Failed to submit answers", err);
